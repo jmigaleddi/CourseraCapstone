@@ -1,0 +1,107 @@
+---
+title: |
+    | Coursera DSS Capstone Project - Documentation
+    | October 2016
+author: "John Migaleddi"
+date: "September 29, 2016"
+output: html_document
+---
+
+```{r initial set up, warning=FALSE, message=FALSE, echo=FALSE, results='hide'}
+setwd("C:/Users/migalej/OneDrive for Business/OnlineEducation/DataScienceSpecialization/10-Capstone/courseprojects")
+library(quanteda); library(dplyr); library(ggplot2); library(scales); library(cowplot)
+```
+ 
+#### Introduction
+The task of this project was to perform analysis on a set of text data, with the ultimate goal of creating a Shiny application that would utilize a language model to generate next-word predictions based on user input.     
+
+The data used for the project were provided by SwiftKey and consisted of a corpus of Twitter posts, blog posts, and news stories.   
+
+In order to achieve the task of next-word prediction, an *n-gram* language model was constructed. Document-feature matrices with up to _**4-grams**_ were created and manipulated, and **Stupid Backoff** was used to account for user input that was not seen in the training data.   
+
+In order to assess the accuracy and efficiency of the n-gram model, a benchmarking algorithm was used (the algorithm and supporting documentation can be found [on Github](https://github.com/hfoffani/dsci-benchmark). This model achieved a 5.46% top-1 precision and 10.86% top-3 precision. The average runtime was 120.74 msec, and the total memory used was 132.6MB.   
+
+The Shiny application can be found [here](www.google.com).     
+     
+     
+#### Exploratory
+Prior to language modeling, some exploratory analysis was performed on the data in order to get a feel for the data.
+
+```{r basic summaries, warning=FALSE, message=FALSE, echo=FALSE}
+cnxn.twit <-                    file(description = "C:/Users/migalej/OneDrive for Business/OnlineEducation/DataScienceSpecialization/10-Capstone/courseprojects/data/final/en_US/en_US.twitter.txt", open = "r")
+twitter <-                      readLines(cnxn.twit)
+close.connection(cnxn.twit)
+
+cnxn.news <-                    file(description = "C:/Users/migalej/OneDrive for Business/OnlineEducation/DataScienceSpecialization/10-Capstone/courseprojects/data/final/en_US/en_US.newsEDIT.txt", open = "r")
+news <-                         readLines(cnxn.news)
+close.connection(cnxn.news)
+
+cnxn.blogs <-                   file(description = "C:/Users/migalej/OneDrive for Business/OnlineEducation/DataScienceSpecialization/10-Capstone/courseprojects/data/final/en_US/en_US.blogs.txt", open = "r")
+blogs <-                        readLines(cnxn.blogs)
+close.connection(cnxn.blogs)
+
+twitlines <-                    length(twitter)
+avgtwitlinelength <-            round(mean(sapply(twitter, nchar), na.rm = T))
+newslines <-                    length(news)
+avgnewslinelength <-            round(mean(sapply(news, nchar), na.rm = T))
+blogslines <-                   length(blogs)
+avgblogslinelength <-           round(mean(sapply(blogs, nchar), na.rm = T))
+
+initial.table <- rbind(cbind(twitlines, avgtwitlinelength, twitlines * avgtwitlinelength), 
+                       cbind(newslines, avgnewslinelength, newslines * avgnewslinelength), 
+                       cbind(blogslines, avgblogslinelength, blogslines * avgblogslinelength))
+rownames(initial.table) <- c("Twitter", "News", "Blogs")
+colnames(initial.table) <- c("# of Lines", "Avg Line Length", "# of Characters")
+
+print(initial.table)
+```
+
+In total, the English-language data set is very large (nearly 4.2 million lines in total). Given the large volume, a random sample will be utilized for further analysis. The benefits gained in processing time will outweigh any degradation in the analysis due to removing a large number of our observations. Specifically, a random sample of 10% will be used for modeling phase utilizing the `rbinom` function with a 0.10 probability to create a sampling index and filter the original data set.
+     
+     
+#### Pre-Processing and Modeling
+Prior to modeling, a few cleaning steps were used in order to remove unwanted characters from the data. Specifically, the `gsub` function was used to remove anything that wasn't alphanumeric, a space, or punctuation (these would ultimately be handled by the `dfm` function in the `quanteda` package.) In addition, apostrophes were removed, as well as strings of consecutive underscores and dashes.
+
+Post-processing, document-feature matrices (DFMs) were created (up to *4-grams*). For each DFM, the following steps were taken:   
+
+1. Calculate column sums (in order to determine word counts)
+2. Clean the column names
+3. Calculate transform the *n-gram* into its components for the purposes of calculating the maximum likelihood estimate (MLE)
+4. Create the "prefix" and "predicted word" fields, i.e. for *3-grams*, split the *3-gram* into three words, and concatenate the first two for the prefix
+5. Join the current table with the *n-1-gram* table for the purposes of calculating the MLE
+6. Clean the column names
+7. Calculate the MLE
+     
+Once the tables were created, focus could then shift to creating a function which would generate next-word predictions. The function takes up to three words as input (as well as an optional argument for the amount of results to return) and generates a data table with 4 fields:
+
+1. **"input"** -        the components of the user input that were used to generate the prediction
+2. **"source"** -       the model that was used, i.e. *4-gram*, *3-gram*, etc.
+3. **"prediction"** -   the next-word prediction
+4. **"score"** -        the score generated through implementation of Stupid Backoff
+
+Some clarification on the "score" field: in order to account for instances of user input which haven't been seen in the training data, some sort of smoothing methodology must be implemented. In this case, a version of backoff methodology called Stupid Backoff was used. What this does is if the highest order of user input (in this case *3-grams*) cannot be found in the training data, the model "backs off" to the next lowest-order *n-gram* (in this case the *2-gram*). In order to downweight the importance of the lower-order *n-gram* model, a parameter *alpha* is applied to the MLEs calculated in each *n-gram* model. As each "backoff" happens, the *alpha* parameter is raised to an additional power, e.g. 1 backoff results in *alpha*^1^, 2 backoffs results in *alpha*^2^, etc. In the Stupid Backoff, the *alpha* parameter is set to 0.4. The "score" field is the result of this backoff calculation.
+
+In the event that the user input cannot be found in the training data, the most commonly used unigrams are returned.
+     
+#### Model Evaluation
+As stated in the introduction, a benchmarking script was available via Github from previous students in the Data Science Specialization Capstone. Running the prediction function through the algorithm yielded the following results:
+
+```Overall top-3 score:     8.04 %```   
+```Overall top-1 precision: 5.46 %```   
+```Overall top-3 precision: 10.86 %```   
+```Average runtime:         120.74 msec```   
+```Number of predictions:   28103```   
+```Total memory used:       132.60 MB```   
+
+```Dataset details```   
+ ```Dataset "blogs" (599 lines, 14437 words, hash 871ff13e0a82611957f43158c5511de5e4f0dfe121fd674888d865dbe390cb96)```   
+  ```Score: 6.91 %, Top-1 precision: 3.53 %, Top-3 precision: 11.03 %```   
+ ```Dataset "tweets" (793 lines, 13894 words, hash 7571053d5534e9e9e6e6391176e0dd83bedb1227e86cb220bca59c95286fa6d1)```   
+  ```Score: 9.17 %, Top-1 precision: 7.40 %, Top-3 precision: 10.69 %```   
+
+While the prediction accuracy results are admittedly mediocre, these were the best results after performing multiple experiments with different sample sizes, different pre-processing steps, etc. These results are being shared as it is critical for users to know the performance they can expect when using the app to predict words.     
+
+For reference, it has been anecdotally quoted that the actual SwiftKey mobile app has top-3 precision of about 30%.
+
+#### For more information
+All code used to generate the Shiny app (including the word prediction function) can be found at [Github](www.google.com).
