@@ -8,7 +8,7 @@ output: html_document
 ---
 
 ```{r initial set up, warning=FALSE, message=FALSE, echo=FALSE, results='hide'}
-setwd("C:/Users/migalej/OneDrive for Business/OnlineEducation/DataScienceSpecialization/10-Capstone/courseprojects")
+setwd("C:/Users/migalej/OneDrive for Business/OnlineEducation/DataScienceSpecialization/10-Capstone/courseprojects/CourseraCapstone")
 library(quanteda); library(dplyr); library(ggplot2); library(scales); library(cowplot)
 ```
  
@@ -21,7 +21,7 @@ In order to achieve the task of next-word prediction, an *n-gram* language model
 
 In order to assess the accuracy and efficiency of the n-gram model, a benchmarking algorithm was used (the algorithm and supporting documentation can be found [on Github](https://github.com/hfoffani/dsci-benchmark). This model achieved a 5.46% top-1 precision and 10.86% top-3 precision. The average runtime was 120.74 msec, and the total memory used was 132.6MB.   
 
-The Shiny application can be found [here](www.google.com).     
+The Shiny application can be found [here](https://jmigaleddi.shinyapps.io/NextWordPrediction/).     
      
      
 #### Exploratory
@@ -104,4 +104,4 @@ While the prediction accuracy results are admittedly mediocre, these were the be
 For reference, it has been anecdotally quoted that the actual SwiftKey mobile app has top-3 precision of about 30%.
 
 #### For more information
-All code used to generate the Shiny app (including the word prediction function) can be found at [Github](www.google.com).
+All code used to generate the Shiny app (including the word prediction function) can be found at [Github](https://github.com/jmigaleddi/CourseraCapstone).

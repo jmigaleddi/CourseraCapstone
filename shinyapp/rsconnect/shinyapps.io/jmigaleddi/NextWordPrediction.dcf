@@ -1,10 +1,10 @@
 name: NextWordPrediction
 account: jmigaleddi
 server: shinyapps.io
-appId: 129732
-bundleId: 577699
+appId: 130197
+bundleId: 579774
 url: https://jmigaleddi.shinyapps.io/NextWordPrediction/
-when: 1475692930.85946
+when: 1475863691.45033
 asMultiple: FALSE
 asStatic: FALSE
 ignoredFiles: documentation.Rmd|modeldata/README.txt.txt
