@@ -2,9 +2,9 @@ name: NextWordPrediction
 account: jmigaleddi
 server: shinyapps.io
 appId: 130197
-bundleId: 579774
+bundleId: 579791
 url: https://jmigaleddi.shinyapps.io/NextWordPrediction/
-when: 1475863691.45033
+when: 1475865096.82486
 asMultiple: FALSE
 asStatic: FALSE
 ignoredFiles: documentation.Rmd|modeldata/README.txt.txt

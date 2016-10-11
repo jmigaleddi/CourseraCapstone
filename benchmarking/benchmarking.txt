@@ -1,0 +1,13 @@
+## Results of benchmark.R with 50% sample against test data provided in the Github repo
+Overall top-3 score:     7.98 %
+Overall top-1 precision: 5.42 %
+Overall top-3 precision: 10.78 %
+Average runtime:         334.23 msec
+Number of predictions:   28466
+Total memory used:       1675.17 MB
+
+Dataset details
+ Dataset "blogs" (599 lines, 14587 words, hash 4c67477a3cd454db85eed06460f5733ee4db312a6e5e2fc8430388ac3b9fb1ae)
+  Score: 6.89 %, Top-1 precision: 3.51 %, Top-3 precision: 10.99 %
+ Dataset "tweets" (793 lines, 14071 words, hash 4b0ffd0921661f2ccb25f6fb4cd5e99aa713004592f3cd88a4fb23a6af0d93b6)
+  Score: 9.07 %, Top-1 precision: 7.32 %, Top-3 precision: 10.56 %
